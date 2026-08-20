@@ -4,13 +4,27 @@ After=pixelfed-db.service pixelfed-redis.service
 Wants=pixelfed-db.service pixelfed-redis.service
 
 [Container]
-Image=localhost/pixelfed:0.12.7
+Image=localhost/pixelfed:{{ pixelfed_version | regex_replace('^v', '') }}
 ContainerName=pixelfed-app
 Network=pixelfed-network
 
 PublishPort=8080:8080
 
 EnvironmentFile=/home/pixelfed/srv/app/.env
+
+Environment=SSL_MODE=off
+Environment=PHP_POST_MAX_SIZE=500M
+Environment=PHP_UPLOAD_MAX_FILE_SIZE=500M
+Environment=PHP_OPCACHE_ENABLE=1
+
+Environment=AUTORUN_ENABLED=true
+Environment=AUTORUN_LARAVEL_MIGRATION=true
+Environment=AUTORUN_LARAVEL_MIGRATION_ISOLATION=true
+Environment=AUTORUN_LARAVEL_STORAGE_LINK=true
+Environment=AUTORUN_LARAVEL_EVENT_CACHE=true
+Environment=AUTORUN_LARAVEL_ROUTE_CACHE=true
+Environment=AUTORUN_LARAVEL_VIEW_CACHE=true
+Environment=AUTORUN_LARAVEL_CONFIG_CACHE=true
 
 Volume=/home/pixelfed/srv/storage:/var/www/html/storage:U
 Volume=/home/pixelfed/srv/bootstrap-cache:/var/www/html/bootstrap/cache:U
