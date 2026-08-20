@@ -22,3 +22,11 @@
       - passt
     state: present
 
+- name: Install Podman networking dependencies
+  ansible.builtin.apt:
+    name:
+      - podman
+      - netavark
+      - aardvark-dns
+    state: present
+    update_cache: true
