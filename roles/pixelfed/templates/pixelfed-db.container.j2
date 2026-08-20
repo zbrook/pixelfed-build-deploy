@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Container]
-Image=docker.io/library/mysql:9
+Image=docker.io/library/mysql:8.4
 ContainerName=pixelfed-db
 Network=pixelfed-network
 EnvironmentFile=/home/pixelfed/srv/db.env
