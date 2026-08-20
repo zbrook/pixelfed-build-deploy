@@ -8,7 +8,7 @@ Image=localhost/pixelfed:{{ pixelfed_version | regex_replace('^v', '') }}
 ContainerName=pixelfed-app
 Network=pixelfed-network
 
-PublishPort=8080:8080
+PublishPort=127.0.0.1:8080:8080
 
 EnvironmentFile=/home/pixelfed/srv/app/.env
 

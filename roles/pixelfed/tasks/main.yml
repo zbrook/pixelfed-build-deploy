@@ -1,4 +1,39 @@
 ---
+- name: Get Pixelfed user information
+  ansible.builtin.getent:
+    database: passwd
+    key: pixelfed
+
+- name: Set Pixelfed UID
+  ansible.builtin.set_fact:
+    pixelfed_uid: "{{ ansible_facts.getent_passwd.pixelfed[1] }}"
+
+- name: Stop existing Pixelfed services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    scope: user
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ pixelfed_uid }}
+  loop:
+    - pixelfed-app.service
+    - pixelfed-redis.service
+    - pixelfed-db.service
+  failed_when: false
+
+- name: Remove existing Pixelfed containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: absent
+  become: true
+  become_user: pixelfed
+  loop:
+    - pixelfed-app
+    - pixelfed-redis
+    - pixelfed-db
+
 - name: Create Pixelfed application directory
   ansible.builtin.file:
     path: "{{ pixelfed_root }}"
@@ -113,3 +148,27 @@
     owner: pixelfed
     group: pixelfed
     mode: "0600"
+
+- name: Reload Pixelfed user systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"
+
+- name: Enable and start Pixelfed services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    scope: user
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"
+  loop:
+    - pixelfed-db.service
+    - pixelfed-redis.service
+    - pixelfed-app.service

@@ -6,12 +6,8 @@ pixelfed_app_dir: "{{ pixelfed_root }}/app"
 pixelfed_db_name: "pixelfed"
 pixelfed_db_user: "pixelfed"
 
-# pixelfed_domain: ""
-# pixelfed_app_url: ""
-
 pixelfed_db_host: "pixelfed-db"
 pixelfed_db_port: "3306"
 
 pixelfed_redis_host: "pixelfed-redis"
 pixelfed_redis_port: "6379"
-
