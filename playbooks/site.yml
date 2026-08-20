@@ -1,0 +1,9 @@
+---
+- name: Configure Pixelfed server
+  hosts: pixelfed
+  become: true
+
+  roles:
+    - base
+    - podman
+    - pixelfed

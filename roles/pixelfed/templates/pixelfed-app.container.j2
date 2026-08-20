@@ -1,0 +1,23 @@
+[Unit]
+Description=Pixelfed application
+After=pixelfed-db.service pixelfed-redis.service
+Wants=pixelfed-db.service pixelfed-redis.service
+
+[Container]
+Image=localhost/pixelfed:0.12.7
+ContainerName=pixelfed-app
+Network=pixelfed-network
+
+PublishPort=8080:8080
+
+EnvironmentFile=/home/pixelfed/srv/app/.env
+
+Volume=/home/pixelfed/srv/storage:/var/www/html/storage:U
+Volume=/home/pixelfed/srv/bootstrap-cache:/var/www/html/bootstrap/cache:U
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target
+

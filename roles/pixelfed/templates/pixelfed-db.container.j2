@@ -1,0 +1,18 @@
+[Unit]
+Description=Pixelfed MySQL database
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/library/mysql:9
+ContainerName=pixelfed-db
+Network=pixelfed-network
+EnvironmentFile=/home/pixelfed/srv/db.env
+Volume=/home/pixelfed/srv/mysql:/var/lib/mysql
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target
+

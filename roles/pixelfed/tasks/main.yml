@@ -1,0 +1,116 @@
+---
+- name: Create Pixelfed application directory
+  ansible.builtin.file:
+    path: "{{ pixelfed_root }}"
+    state: directory
+    owner: pixelfed
+    group: pixelfed
+    mode: "0755"
+
+- name: Create Pixelfed persistent directories
+  ansible.builtin.file:
+    path: "{{ pixelfed_root }}/{{ item }}"
+    state: directory
+    owner: pixelfed
+    group: pixelfed
+    mode: "0755"
+  loop:
+    - storage
+    - storage/app/public
+    - storage/framework/cache
+    - storage/framework/sessions
+    - storage/framework/views
+    - storage/logs
+    - bootstrap-cache
+    - mysql
+    - redis
+
+- name: Create Pixelfed source directory
+  ansible.builtin.file:
+    path: "{{ pixelfed_app_dir }}"
+    state: directory
+    owner: pixelfed
+    group: pixelfed
+    mode: "0755"
+
+- name: Check out Pixelfed
+  ansible.builtin.git:
+    repo: https://github.com/pixelfed/pixelfed.git
+    dest: "{{ pixelfed_app_dir }}"
+    version: "{{ pixelfed_version }}"
+    force: true
+    update: true
+  become_user: pixelfed
+
+- name: Create rootless Quadlet directory
+  ansible.builtin.file:
+    path: /home/pixelfed/.config/containers/systemd
+    state: directory
+    owner: pixelfed
+    group: pixelfed
+    mode: "0700"
+
+- name: Create MySQL environment file
+  ansible.builtin.template:
+    src: db.env.j2
+    dest: "{{ pixelfed_root }}/db.env"
+    owner: pixelfed
+    group: pixelfed
+    mode: "0600"
+
+- name: Create MySQL Quadlet
+  ansible.builtin.template:
+    src: pixelfed-db.container.j2
+    dest: /home/pixelfed/.config/containers/systemd/pixelfed-db.container
+    owner: pixelfed
+    group: pixelfed
+    mode: "0600"
+
+- name: Create Redis Quadlet
+  ansible.builtin.template:
+    src: pixelfed-redis.container.j2
+    dest: /home/pixelfed/.config/containers/systemd/pixelfed-redis.container
+    owner: pixelfed
+    group: pixelfed
+    mode: "0600"
+
+- name: Create Pixelfed environment file
+  ansible.builtin.template:
+    src: pixelfed.env.j2
+    dest: "{{ pixelfed_app_dir }}/.env"
+    owner: pixelfed
+    group: pixelfed
+    mode: "0600"
+
+- name: Configure Podman registry search
+  become_user: pixelfed
+  ansible.builtin.file:
+    path: /home/pixelfed/.config/containers
+    state: directory
+    owner: pixelfed
+    group: pixelfed
+    mode: "0700"
+
+- name: Configure Docker Hub as Podman short-name registry
+  become_user: pixelfed
+  ansible.builtin.template:
+    src: registries.conf.j2
+    dest: /home/pixelfed/.config/containers/registries.conf
+    owner: pixelfed
+    group: pixelfed
+    mode: "0600"
+
+- name: Build Pixelfed application image
+  become_user: pixelfed
+  ansible.builtin.command:
+    cmd: podman build -t localhost/pixelfed:0.12.7 .
+    chdir: "{{ pixelfed_app_dir }}"
+
+- name: Create Pixelfed application Quadlet
+  ansible.builtin.template:
+    src: pixelfed-app.container.j2
+    dest: /home/pixelfed/.config/containers/systemd/pixelfed-app.container
+    owner: pixelfed
+    group: pixelfed
+    mode: "0600"
+

@@ -1,0 +1,18 @@
+[Unit]
+Description=Pixelfed Redis
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/library/redis:7-alpine
+ContainerName=pixelfed-redis
+Network=pixelfed-network
+Exec=redis-server --appendonly yes
+Volume=/home/pixelfed/srv/redis:/data
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target
+

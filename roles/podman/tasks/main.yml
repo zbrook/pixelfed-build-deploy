@@ -1,0 +1,33 @@
+---
+- name: Install Podman
+  ansible.builtin.apt:
+    name:
+      - podman
+    state: present
+
+- name: Create Pixelfed service user
+  ansible.builtin.user:
+    name: pixelfed
+    system: true
+    create_home: true
+    shell: /bin/bash
+
+- name: Configure subordinate UID range
+  ansible.builtin.lineinfile:
+    path: /etc/subuid
+    regexp: '^pixelfed:'
+    line: 'pixelfed:100000:65536'
+    create: true
+
+- name: Configure subordinate GID range
+  ansible.builtin.lineinfile:
+    path: /etc/subgid
+    regexp: '^pixelfed:'
+    line: 'pixelfed:100000:65536'
+    create: true
+
+- name: Enable systemd lingering for Pixelfed user
+  ansible.builtin.command:
+    cmd: loginctl enable-linger pixelfed
+    creates: /var/lib/systemd/linger/pixelfed
+
