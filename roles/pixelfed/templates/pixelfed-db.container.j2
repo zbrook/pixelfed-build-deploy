@@ -11,7 +11,7 @@ EnvironmentFile=/home/pixelfed/srv/db.env
 Volume=/home/pixelfed/srv/mysql:/var/lib/mysql
 
 [Service]
-Restart=unless-stopped
+Restart=on-failure
 
 [Install]
 WantedBy=default.target

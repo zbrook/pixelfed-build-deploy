@@ -11,7 +11,7 @@ Exec=redis-server --appendonly yes
 Volume=/home/pixelfed/srv/redis:/data
 
 [Service]
-Restart=unless-stopped
+Restart=on-failure
 
 [Install]
 WantedBy=default.target

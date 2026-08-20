@@ -30,7 +30,7 @@ Volume=/home/pixelfed/srv/storage:/var/www/html/storage:U
 Volume=/home/pixelfed/srv/bootstrap-cache:/var/www/html/bootstrap/cache:U
 
 [Service]
-Restart=unless-stopped
+Restart=on-failure
 
 [Install]
 WantedBy=default.target
