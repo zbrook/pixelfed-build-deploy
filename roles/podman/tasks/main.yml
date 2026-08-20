@@ -8,9 +8,10 @@
 - name: Create Pixelfed service user
   ansible.builtin.user:
     name: pixelfed
-    system: true
+    home: /home/pixelfed
     create_home: true
     shell: /bin/bash
+    system: false
 
 - name: Configure subordinate UID range
   ansible.builtin.lineinfile:

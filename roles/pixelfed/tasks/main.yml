@@ -103,7 +103,7 @@
 - name: Build Pixelfed application image
   become_user: pixelfed
   ansible.builtin.command:
-    cmd: podman build -t localhost/pixelfed:0.12.7 .
+    cmd: "podman build -t localhost/pixelfed:{{ pixelfed_version | regex_replace('^v', '') }} ."
     chdir: "{{ pixelfed_app_dir }}"
 
 - name: Create Pixelfed application Quadlet
