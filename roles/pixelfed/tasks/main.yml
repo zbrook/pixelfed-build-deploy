@@ -109,6 +109,14 @@
     group: pixelfed
     mode: "0600"
 
+- name: Create Horizon Quadlet
+  ansible.builtin.template:
+    src: pixelfed-horizon.container.j2
+    dest: /home/pixelfed/.config/containers/systemd/pixelfed-horizon.container
+    owner: pixelfed
+    group: pixelfed
+    mode: "0644"
+
 - name: Create Pixelfed environment file
   ansible.builtin.template:
     src: pixelfed.env.j2
@@ -172,3 +180,58 @@
     - pixelfed-db.service
     - pixelfed-redis.service
     - pixelfed-app.service
+
+- name: Run Pixelfed database migrations
+  ansible.builtin.command:
+    cmd: podman exec pixelfed-app php artisan migrate --force
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"
+
+- name: Check for Passport private key
+  ansible.builtin.stat:
+    path: "{{ pixelfed_root }}/storage/oauth-private.key"
+  register: passport_private_key
+
+- name: Check for Passport public key
+  ansible.builtin.stat:
+    path: "{{ pixelfed_root }}/storage/oauth-public.key"
+  register: passport_public_key
+
+- name: Generate Passport OAuth keys
+  ansible.builtin.command:
+    cmd: podman exec pixelfed-app php artisan passport:keys
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"
+  when:
+    - not passport_private_key.stat.exists or not passport_public_key.stat.exists
+
+- name: Clear Pixelfed application cache
+  ansible.builtin.command:
+    cmd: podman exec pixelfed-app php artisan optimize:clear
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"
+
+- name: Cache Pixelfed configuration
+  ansible.builtin.command:
+    cmd: podman exec pixelfed-app php artisan config:cache
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"
+
+- name: Enable and start Pixelfed Horizon
+  ansible.builtin.systemd:
+    name: pixelfed-horizon.service
+    enabled: true
+    state: started
+    scope: user
+  become: true
+  become_user: pixelfed
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ pixelfed_uid }}"

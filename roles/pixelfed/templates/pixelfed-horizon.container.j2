@@ -1,0 +1,22 @@
+[Unit]
+Description=Pixelfed Horizon worker
+After=pixelfed-db.service pixelfed-redis.service pixelfed-app.service
+Wants=pixelfed-db.service pixelfed-redis.service
+
+[Container]
+Image=localhost/pixelfed:{{ pixelfed_version | regex_replace('^v', '') }}
+ContainerName=pixelfed-horizon
+Network=pixelfed-network
+
+EnvironmentFile=/home/pixelfed/srv/app/.env
+
+Volume=/home/pixelfed/srv/storage:/var/www/html/storage:U
+Volume=/home/pixelfed/srv/bootstrap-cache:/var/www/html/bootstrap/cache:U
+
+Exec=php artisan horizon
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
